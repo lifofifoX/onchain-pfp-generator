@@ -75,8 +75,6 @@
       max-width: 600px;
       width: 100%;
       image-rendering: pixelated;
-      image-rendering: -moz-crisp-edges;
-      image-rendering: -webkit-optimize-contrast;
     }
 
     .composer-spinner {
@@ -217,6 +215,7 @@
             canvas.width = width;
             canvas.height = height;
             const context = canvas.getContext("2d");
+            context.imageSmoothingEnabled = false;
 
             images.forEach((image) => {
               context.drawImage(image, 0, 0, width, height);
