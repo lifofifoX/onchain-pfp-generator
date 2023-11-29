@@ -81,8 +81,8 @@
       border: 16px solid #f3f3f3;
       border-top: 16px solid #FF8000;
       border-radius: 50%;
-      width: 80px;
-      height: 80px;
+      width: 40px;
+      height: 40px;
       animation: composer-spin 2s linear infinite;
       margin: 20px auto;
     }
@@ -120,10 +120,20 @@
 
     #disclaimer {
       display: none;
+      font-size: 14px;
+      color: #dcdcdc;
+      padding: 5px;
+      margin-bottom: 20px;
+      text-align: justify;
     }
 
     #disclaimer a {
-      color: #FF8000;
+      color: #FFA500;
+      text-decoration: none;
+    }
+
+    #disclaimer a:hover {
+      text-decoration: underline;
     }
 
     @media only screen and (max-width: 600px) {
@@ -154,6 +164,7 @@
 
     <div id="disclaimer">
       <h3>DISCLAIMER: This is an experiment in building a fully on-chain and upgradeable PFP generator. Wizards generated using this are not a part of of the official <a href="https://twitter.com/TheWizardsOfOrd">The Wizards of Ord</a> collection.</h3>
+      <h3>Source code is available on <a href="https://github.com/devords/onchain-pfp-generator">GitHub</a> under MIT license.</h3>
       <h3>Developed by <a href="https://twitter.com/lifofifo">@lifofifo</a></h3>
     </div>
 
