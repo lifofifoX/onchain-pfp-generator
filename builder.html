@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>The Wizards of Ord: Build Your Wizard</title>
+  <style>
+    body {
+      background-color: #1f1f1f;
+      color: #ffffff;
+      font-family: "Courier New", monospace;
+      background-image: url("/content/82e01fe3a50bdaf1d037cf2821c191708528625e2849f5875079f038044a2eb0i0");
+      background-size: cover;
+      background-position: center;
+    }
+
+    button {
+      background-color: #FF6000;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #FF8000;
+    }
+
+    .composer-container {
+      max-width: 600px;
+      height: 100vh;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center;
+      border-radius: 0;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .composer-header {
+      font-size: 36px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-align: center;
+      color: #FF6000;
+    }
+
+    .composer-dropdowns {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .composer-dropdown {
+      text-align: left;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .composer-dropdown label {
+      font-size: 18px;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .composer-dropdown select {
+      font-size: 18px;
+      padding: 10px;
+      width: 100%;
+    }
+
+    .composer-image {
+      display: none;
+      margin: 20px auto;
+      max-width: 600px;
+      width: 100%;
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: -webkit-optimize-contrast;
+    }
+
+    .composer-spinner {
+      border: 16px solid #f3f3f3;
+      border-top: 16px solid #FF8000;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      animation: composer-spin 2s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes composer-spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .composer-error {
+      color: red;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    #downloadButtonContainer {
+      display: none;
+      margin-top: 20px;
+    }
+
+    #downloadButtonContainer a {
+      display: inline-block;
+      background-color: #FF8000;
+      color: #fff;
+      font-size: 18px;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    #downloadButtonContainer a:hover {
+      background-color: #217dbb;
+    }
+
+    #disclaimer {
+      display: none;
+    }
+
+    #disclaimer a {
+      color: #FF8000;
+    }
+
+    @media only screen and (max-width: 600px) {
+      .composer-container {
+        padding: 10px;
+        border-radius: 10px;
+      }
+      .composer-dropdown label, .composer-dropdown select {
+        font-size: 16px;
+      }
+    }
+  </style>
+
+  <script src="/content/a9f6a9b050af3de1a4ce714978c1f2231ba731f1f46731a16d0e411f89308566i0" type="text/javascript"></script>
+</head>
+<body>
+  <div class="composer-container">
+    <h1 class="composer-header">The Wizards of Ord</h1>
+    <h2>Build Your Wizard</h2>
+
+    <div id="spinner" class="composer-spinner"></div>
+    <img id="composed-image" class="composer-image" src="" alt="Composed Image">
+    <div class="composer-dropdowns" id="dropdowns-container"></div>
+    <div id="error-message" class="composer-error"></div>
+    <div id="downloadButtonContainer">
+      <a id="download-link" href="#" download="wizard.png">Download</a>
+    </div>
+
+    <div id="disclaimer">
+      <h3>DISCLAIMER: This is an experiment in building a fully on-chain and upgradeable PFP generator. Wizards generated using this are not a part of of the official <a href="https://twitter.com/TheWizardsOfOrd">The Wizards of Ord</a> collection.</h3>
+      <h3>Developed by <a href="https://twitter.com/lifofifo">@lifofifo</a></h3>
+    </div>
+
+    <script>
+      function createDropdowns(dropdownOptions) {
+        const dropdownsContainer = document.getElementById("dropdowns-container");
+        const sortedTraits = Object.keys(dropdownOptions).sort();
+
+        sortedTraits.forEach((trait) => {
+          const dropdownDiv = document.createElement("div");
+          dropdownDiv.className = "composer-dropdown";
+
+          const label = document.createElement("label");
+          label.textContent = trait.charAt(0).toUpperCase() + trait.slice(1);
+
+          const select = document.createElement("select");
+          select.id = `${trait}-dropdown`;
+
+          dropdownOptions[trait].forEach((option, index) => {
+            const { label, value } = option;
+
+            const optionElement = document.createElement("option");
+            optionElement.textContent = label;
+            optionElement.value = value;
+
+            if (index === 0) {
+              optionElement.selected = true;
+            }
+
+            select.appendChild(optionElement);
+          });
+
+          dropdownDiv.appendChild(label);
+          dropdownDiv.appendChild(select);
+          dropdownsContainer.appendChild(dropdownDiv);
+        });
+      }
+
+      function updateComposedImage() {
+        const dropdowns = document.querySelectorAll(".composer-dropdown select");
+        const composedImage = document.getElementById("composed-image");
+        const spinner = document.getElementById("spinner");
+        const errorMessage = document.getElementById("error-message");
+        const downloadLink = document.getElementById("download-link");
+
+        composedImage.style.display = "none";
+        spinner.style.display = "block";
+        errorMessage.textContent = "";
+
+        const selectedOptions = Array.from(dropdowns).map((dropdown) => dropdown.value).filter(option => option !== 'none');
+        const loadImagePromises = selectedOptions.map(loadImage);
+
+        Promise.all(loadImagePromises)
+          .then((images) => {
+            const width = images[0].width;
+            const height = images[0].height;
+
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const context = canvas.getContext("2d");
+
+            images.forEach((image) => {
+              context.drawImage(image, 0, 0, width, height);
+            });
+
+            composedImage.src = canvas.toDataURL();
+            composedImage.style.display = "block";
+            spinner.style.display = "none";
+            downloadLink.href = canvas.toDataURL();
+          })
+          .catch((error) => {
+            composedImage.style.display = "none";
+            spinner.style.display = "none";
+            errorMessage.textContent = "Error composing image.";
+            console.error(error);
+          });
+      }
+
+      function loadImage(src) {
+        return new Promise((resolve, reject) => {
+          const image = new Image();
+          image.crossOrigin = "anonymous";
+
+          image.onload = () => resolve(image);
+          image.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+
+          image.src = src;
+        });
+      }
+
+      function fetchDropdownOptions(satMappings) {
+        const fetchPromises = Object.entries(satMappings).map(([trait, { sat, includeNone }]) =>
+          fetchSatData(sat).then(inscriptionIds =>
+            Promise.all(inscriptionIds.map(id => fetchMetadata(id)))
+          ).then(metadataList => {
+            let options = metadataList.map(metadata => ({
+              label: metadata.name,
+              value: `/content/${metadata.inscriptionId}`
+            }));
+
+            if (includeNone) {
+              options = [{ label: "None", value: "none" }, ...options];
+            }
+            return { trait, options };
+          })
+        );
+
+        return Promise.all(fetchPromises).then(results => {
+          const options = {};
+          results.forEach(({ trait, options: traitOptions }) => {
+            options[trait] = traitOptions;
+          });
+          return options;
+        });
+      }
+
+      function fetchSatData(satNumber) {
+        return fetch(`/r/sat/${satNumber}`)
+          .then(response => response.json())
+          .then(data => data.ids);
+      }
+
+      function fetchMetadata(inscriptionId) {
+        return fetch(`/r/metadata/${inscriptionId}`)
+          .then(response => response.json())
+          .then(json => {
+            const byteArray = new Uint8Array(json.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            return byteArray.buffer;
+          })
+          .then(buffer => CBOR.decode(buffer))
+          .then(jsonData => {
+            return {
+              name: jsonData.name,
+              inscriptionId: inscriptionId
+            };
+          });
+      }
+
+      function showHiddenComponents() {
+        const hiddenComponents = [ "disclaimer", "downloadButtonContainer" ];
+
+        hiddenComponents.forEach(identifier => {
+          const element = document.getElementById(identifier);
+          element.style.display = "block";
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const satMappings = {
+          "Background": { sat: 1888099003260083, includeNone: false },
+          "Body": { sat: 736753070579047, includeNone: false },
+          "Eyes": { sat: 1888099003368398, includeNone: false },
+          "Clothes": { sat: 1347505694895867, includeNone: true },
+          "Face": { sat: 1543833113838954, includeNone: true },
+          "Head": { sat: 1888099003396338, includeNone: true },
+          "Weapon": { sat: 1953639996496251, includeNone: false },
+        };
+
+        fetchDropdownOptions(satMappings)
+          .then(options => {
+            createDropdowns(options);
+            updateComposedImage();
+            showHiddenComponents();
+          });
+      });
+
+      document.addEventListener("change", (event) => {
+        if (event.target.matches(".composer-dropdown select")) {
+          updateComposedImage();
+        }
+      });
+    </script>
+  </div>
+</body>
+</html>
