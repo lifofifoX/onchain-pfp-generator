@@ -158,8 +158,10 @@
     <img id="composed-image" class="composer-image" src="" alt="Composed Image">
     <div class="composer-dropdowns" id="dropdowns-container"></div>
     <div id="error-message" class="composer-error"></div>
+
     <div id="downloadButtonContainer">
-      <a id="download-link" href="#" download="wizard.png">Download</a>
+      <a id="download-link" href="#" download="wizard.png">Download Original</a>
+      <a id="download-large-link" href="#" download="wizard_large.png">Download Large</a>
     </div>
 
     <div id="disclaimer">
@@ -236,6 +238,14 @@
             composedImage.style.display = "block";
             spinner.style.display = "none";
             downloadLink.href = canvas.toDataURL();
+
+            const largeCanvas = document.createElement("canvas");
+            largeCanvas.width = 800;
+            largeCanvas.height = 800;
+            const largeCtx = largeCanvas.getContext("2d");
+            largeCtx.imageSmoothingEnabled = false;
+            largeCtx.drawImage(canvas, 0, 0, 800, 800);
+            document.getElementById('download-large-link').href = largeCanvas.toDataURL();
           })
           .catch((error) => {
             composedImage.style.display = "none";
